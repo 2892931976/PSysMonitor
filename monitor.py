@@ -18,16 +18,40 @@ class Monitor():
 
     def cpu_monitor(self):
         if self.conf['cpu'] < self.data_picker.get_cpu_percent():
-            return '[CPU]Usage percentage higher than alert value!'
+            return '[CPU]Usage percentage higher than threshold!'
+        return ''
+
+    def memory_monitor(self):
+        if self.conf['memory'] < self.data_picker.get_memory_used_percent():
+            return '[MEMORY]Usage percentage higher than threshold!'
+        return ''
+
+    def network_monitor(self):
+        message = ''
+        speeds = self.data_picker.get_network_speed()
+        if self.conf['network_speed'] < speeds['send']:
+            message += '[NETWORK]Sending speed faster than threshold!'
+        if self.conf['network_speed'] < speeds['receive']:
+            message += '[NETWORK]Receiving speed faster than threshold!'
+        return message
+
+    def process_monitor(self):
         return ''
 
     def run(self):
         while(True):
-            message_body = self.cpu_monitor()
+            message_body = ""
+            message_body += self.cpu_monitor()
+            message_body += self.memory_monitor()
+            message_body += self.network_monitor()
+            message_body += self.process_monitor()
+
             if len(message_body)>0:
                 alert_sender.send_alert(message_body)
             else:
                 alert_sender.send_alert("System OK!")
+            print message_body
+
             time.sleep(self.conf['interval'])
 
 def main():
