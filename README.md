@@ -30,6 +30,10 @@ After that, here we go:
 
 And the monitor will run on background and record all logging message into trace.log, sending system message to bellringer.
 
+##License
+
+GNU GPL, of course~
+
 
 
 
