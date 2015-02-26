@@ -60,10 +60,12 @@ class Monitor():
 
             if len(message_body)==0:
                 message_body = 'System OK'
-                logger.log("INFO", message_body)
             else:
                 logger.log("WARNING", message_body)
-            alert_sender.send_alert(message_body)
+            try:
+                alert_sender.send_alert(message_body)
+            except Exception as ex:
+                logger.log("ERROR", 'Alert sending error:'+str(ex))
 
             time.sleep(self.conf['interval'])
 
