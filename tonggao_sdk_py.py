@@ -30,7 +30,7 @@ class TonggaoIncident(object):
         """send post request with the uri,headers and params """
         params_json = json.dumps(params)
         req = urllib2.Request(uri, data=params_json, headers=headers)
-        resp = urllib2.urlopen(req)
+        resp = urllib2.urlopen(req, timeout=1)
         return resp.read()
 
     def __send_request(self, uri, request_headers, params):
