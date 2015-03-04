@@ -51,23 +51,22 @@ class Monitor():
         return ''
 
     def run(self):
-        while(True):
-            message_body = ""
-            message_body += self.cpu_monitor()
-            message_body += self.memory_monitor()
-            message_body += self.network_monitor()
-            message_body += self.process_monitor()
+        message_body = ""
+        message_body += self.cpu_monitor()
+        message_body += self.memory_monitor()
+        message_body += self.network_monitor()
+        message_body += self.process_monitor()
 
-            if len(message_body)==0:
-                message_body = 'System OK'
-            else:
-                logger.log("WARNING", message_body)
-            try:
-                alert_sender.send_alert(message_body)
-            except Exception as ex:
-                logger.log("ERROR", 'Alert sending error:'+str(ex))
+        if len(message_body)==0:
+            message_body = 'System OK'
+        else:
+            logger.log("WARNING", message_body)
+        try:
+            alert_sender.send_alert(message_body)
+        except Exception as ex:
+            logger.log("ERROR", 'Alert sending error:'+str(ex))
 
-            time.sleep(self.conf['interval'])
+        time.sleep(self.conf['interval'])
 
 def main():
     monitor = Monitor()
