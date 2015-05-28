@@ -1,9 +1,19 @@
-import tonggao_sdk_py
+import smtplib
+from email.mime.text import MIMEText
 
-def send_alert(message):
-    service_id = '952'
-    service_key = '4164fe4dba67ed7d5bf057e43ac67db5'
-    tonggaoIncident = tonggao_sdk_py.TonggaoIncident(service_id, service_key)
-#No more incident
-    #tonggaoIncident.triggerIncident(message)
+def send_mail(receiver, title, message):
+    me = "psysmonitor<psysmonitor@sina.com>"
+    msg = MIMEText(message, _subtype="plain")
+    msg["Subject"] = title
+    msg["From"] = me
+    msg["To"] = receiver
+    try:
+        server = smtplib.SMTP_SSL("smtp.sina.com",465)
+        server.login('psysmonitor','111222333')
+        server.sendmail(me, receiver, msg.as_string())
+        server.close()
+        return True
+    except Exception, e:
+        print str(e)
+        return False
 
