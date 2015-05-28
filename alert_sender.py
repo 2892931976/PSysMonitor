@@ -2,7 +2,8 @@ import tonggao_sdk_py
 
 def send_alert(message):
     service_id = '952'
-    service_key = 'f566462643b4d90d5e6f9134d0ba441d'
+    service_key = '4164fe4dba67ed7d5bf057e43ac67db5'
     tonggaoIncident = tonggao_sdk_py.TonggaoIncident(service_id, service_key)
-    tonggaoIncident.triggerIncident(message)
+#No more incident
+    #tonggaoIncident.triggerIncident(message)
 

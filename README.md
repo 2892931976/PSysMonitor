@@ -10,14 +10,9 @@ This is a simple monitor for linux server, with the ability to check the usage o
 Python 2.\*
 psutil
 
-##Third Party Service
-
-[Bellringer](http://tonggao.baidu.com)
-
 ##Usage
 
 Firstly you should install the python, and psutil.
-Secondly you can register an account on Bellringer.
 Thirdly, clone this repo, and change the config inside code.(monitor.py and alert\_sender.py):
 
 * The process you want to keep existance
