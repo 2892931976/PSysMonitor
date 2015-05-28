@@ -11,6 +11,7 @@ class PSysMonitor(threading.Thread):
         threading.Thread.__init__(self)
         self.server_name = "My Server"
         self.admin_email = "mybuffer@163.com"
+        self.last_heart_beat_date = ""
         self.picker = {}
         self.picker['cpu'] = data_picker.CpuDataPicker()
         self.picker['memory'] = data_picker.MemoryDataPicker()
@@ -22,7 +23,6 @@ class PSysMonitor(threading.Thread):
                 'nginx',
                 'php5-fpm',
                 'fteproxy.bin',
-                'notfound'
                 ) # List of process to check exist
         self.picker['process'] = data_picker.ProcessPicker(_monitor_process_list)
         self.conf = {}
@@ -54,12 +54,23 @@ class PSysMonitor(threading.Thread):
         if not alert_sender.send_mail(self.admin_email, self.server_name+" System Recover", "Congratulation"):
             logger.log("ERROR", "[PSysMonitor] Sending mail error!")
 
+    def check_heartbeat(self):
+        cur_date = time.strftime("%d/%m/%Y")
+        if self.last_heart_beat_date != cur_date:
+            self.last_heart_beat_date = cur_date
+            title = "%s heart beat" % self.server_name
+            message = "This is the heart beat from your dear server."
+            if not alert_sender.send_mail(self.admin_email, title, message):
+                logger.log("ERROR", "[PSysMonitor] Sending heartbeat mail error!")
+
+
     def run(self):
         logger.log("INFO", "[PSysMonitor] Engine Start!")
         for key, picker in self.picker.iteritems():
             picker.start()
         self.cur_system_status = False
         while(True):
+            self.check_heartbeat()
             time.sleep(self.conf['interval'])
             alert_message = self.check_values()
             if len(alert_message) > 0:
