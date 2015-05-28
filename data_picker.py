@@ -8,7 +8,7 @@ class BasicDataPicker(threading.Thread):
         threading.Thread.__init__(self)
         self.time_interval = 1
         self.data_report = {
-                'PickerName': 'basic picker',
+                'picker_name': 'basic picker',
                 'value':0,
                 'message':'Nothing yet.'
             }
@@ -29,7 +29,7 @@ class BasicDataPicker(threading.Thread):
 class CpuDataPicker(BasicDataPicker):
     def __init__(self):
         BasicDataPicker.__init__(self)
-        self.data_report['PickerName'] = "CPU"
+        self.data_report['picker_name'] = "CPU"
 
     def pick(self):
         self.data_report['value'] = psutil.cpu_percent(interval=1)
@@ -38,7 +38,7 @@ class CpuDataPicker(BasicDataPicker):
 class MemoryDataPicker(BasicDataPicker):
     def __init__(self):
         BasicDataPicker.__init__(self)
-        self.data_report['PickerName'] = "Memory"
+        self.data_report['picker_name'] = "Memory"
 
     def pick(self):
         data = psutil.virtual_memory()
@@ -48,7 +48,7 @@ class MemoryDataPicker(BasicDataPicker):
 class NetworkDataPicker(BasicDataPicker):
     def __init__(self, _direction):
         BasicDataPicker.__init__(self)
-        self.data_report['PickerName'] = "Network"
+        self.data_report['picker_name'] = "Network"
         if _direction == 1:
             self.direction = 'send'
         else:
@@ -72,7 +72,7 @@ class NetworkDataPicker(BasicDataPicker):
 class ProcessPicker(BasicDataPicker):
     def __init__(self, _process_list):
         BasicDataPicker.__init__(self)
-        self.data_report['PickerName'] = "Process"
+        self.data_report['picker_name'] = "Process"
         self.target_process_list = _process_list
 
     def pick(self):

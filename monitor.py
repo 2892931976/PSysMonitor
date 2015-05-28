@@ -1,77 +1,57 @@
 import data_picker
 import alert_sender
+import threading
 import logger
 import time
 import sys
 import os
 
-class Monitor():
+class PSysMonitor(threading.Thread):
     def __init__(self):
-        self.data_picker = data_picker.DataPicker()
-        self.conf = {}
-        self.conf['interval'] = 10
-        self.conf['cpu'] = 75 # If cpu percentage larger than 75, alert
-        self.conf['memory'] = 80 # Memory usage percentage
-        self.conf['network_speed'] = 1200 # Network speed in KB
-        self.conf['process'] = (
-                'ssserver',
+        threading.Thread.__init__(self)
+        self.picker = {}
+        self.picker['cpu'] = data_picker.CpuDataPicker()
+        self.picker['memory'] = data_picker.MemoryDataPicker()
+        self.picker['network_send'] = data_picker.NetworkDataPicker(1)
+        self.picker['network_receive'] = data_picker.NetworkDataPicker(2)
+        _monitor_process_list = (
+                'ss-server',
                 'tor',
                 'nginx',
                 'php5-fpm',
                 'fteproxy.bin'
                 ) # List of process to check exist
-    def threshold_monitor(self, type_str, threshold, current_value):
-        if threshold < current_value:
-            return '[%s] %d higher than threshold!' % (type_str, current_value)
-        return ''
+        self.picker['process'] = data_picker.ProcessPicker(_monitor_process_list)
+        self.conf = {}
+        self.conf['interval'] = 10
+        self.conf['cpu'] = 75 # If cpu percentage larger than 75, alert
+        self.conf['memory'] = 80 # Memory usage percentage
+        self.conf['network_send'] = 1200 # Network speed in KB
+        self.conf['network_receive'] = 1200 # Network speed in KB
+        self.conf['process'] = 1 # When process monitor status is 1, it means something wrong
 
-    def cpu_monitor(self):
-        current_usage = self.data_picker.get_cpu_percent()
-        return self.threshold_monitor('CPU_PERCENTAGE', self.conf['cpu'], current_usage)
-
-    def memory_monitor(self):
-        current_usage =  self.data_picker.get_memory_used_percent()
-        return self.threshold_monitor('MEMORY_PERCENTAGE', self.conf['memory'], current_usage)
-
-    def network_monitor(self):
-        message = ''
-        speeds = self.data_picker.get_network_speed()
-        message += self.threshold_monitor('NETWORK_SEND', self.conf['network_speed'], speeds['send'])
-        message += self.threshold_monitor('NETWORK_RECEIVE', self.conf['network_speed'], speeds['receive'])
-        return message
-
-    def process_monitor(self):
-        not_found_list = ''
-        process_list = self.data_picker.get_process_list()
-        for p in self.conf['process']:
-            if p not in process_list:
-                not_found_list += p+' '
-        if len(not_found_list) > 0:
-            return '[PROCESS]Not found: '+not_found_list
-        return ''
+    def check_values(self):
+        logger.log("INFO", "[PSysMonitor] Begin to refresh status")
+        for key, picker in self.picker.iteritems():
+            picker_data = picker.fetch_data()
+            if self.conf[key] < picker_data['value']:
+                logger.log("WARNING", "[%s][%s][%s]" % (picker_data['picker_name'], picker_data['value'], picker_data['message']))
+            else:
+                logger.log("INFO", "[%s][%s][%s]" % (picker_data['picker_name'], picker_data['value'], picker_data['message']))
 
     def run(self):
-        message_body = ""
-        message_body += self.cpu_monitor()
-        message_body += self.memory_monitor()
-        message_body += self.network_monitor()
-        message_body += self.process_monitor()
+        logger.log("INFO", "[PSysMonitor] Engine Start!")
+        for key, picker in self.picker.iteritems():
+            picker.start()
+        while(True):
+            time.sleep(self.conf['interval'])
+            self.check_values()
 
-        if len(message_body)==0:
-            message_body = 'System OK'
-        else:
-            logger.log("WARNING", message_body)
-        try:
-            alert_sender.send_alert(message_body)
-        except Exception as ex:
-            logger.log("ERROR", 'Alert sending error:'+str(ex))
-
-        time.sleep(self.conf['interval'])
 
 def main():
-    monitor = Monitor()
+    monitor = PSysMonitor()
     try:
-        monitor.run()
+        monitor.start()
     except:
         logger.log("ERROR", sys.exc_info()[0])
         raise
