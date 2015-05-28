@@ -9,6 +9,8 @@ import os
 class PSysMonitor(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
+        self.server_name = "My Server"
+        self.admin_email = "mybuffer@163.com"
         self.picker = {}
         self.picker['cpu'] = data_picker.CpuDataPicker()
         self.picker['memory'] = data_picker.MemoryDataPicker()
@@ -19,7 +21,8 @@ class PSysMonitor(threading.Thread):
                 'tor',
                 'nginx',
                 'php5-fpm',
-                'fteproxy.bin'
+                'fteproxy.bin',
+                'notfound'
                 ) # List of process to check exist
         self.picker['process'] = data_picker.ProcessPicker(_monitor_process_list)
         self.conf = {}
@@ -28,25 +31,44 @@ class PSysMonitor(threading.Thread):
         self.conf['memory'] = 80 # Memory usage percentage
         self.conf['network_send'] = 1200 # Network speed in KB
         self.conf['network_receive'] = 1200 # Network speed in KB
-        self.conf['process'] = 1 # When process monitor status is 1, it means something wrong
+        self.conf['process'] = 0 # When process monitor status is 1, it means something wrong
 
     def check_values(self):
         logger.log("INFO", "[PSysMonitor] Begin to refresh status")
+        alert_message = ""
         for key, picker in self.picker.iteritems():
             picker_data = picker.fetch_data()
+            message = picker.fetch_describe()
             if self.conf[key] < picker_data['value']:
-                logger.log("WARNING", "[%s][%s][%s]" % (picker_data['picker_name'], picker_data['value'], picker_data['message']))
+                logger.log("WARNING", message)
+                alert_message += message
             else:
-                logger.log("INFO", "[%s][%s][%s]" % (picker_data['picker_name'], picker_data['value'], picker_data['message']))
+                logger.log("INFO", message)
+        return alert_message
+
+    def report_exception(self, message):
+        if not alert_sender.send_mail(self.admin_email, self.server_name+" System Warning", message):
+            logger.log("ERROR", "[PSysMonitor] Sending mail error!")
+
+    def report_ok(self):
+        if not alert_sender.send_mail(self.admin_email, self.server_name+" System Recover", "Congratulation"):
+            logger.log("ERROR", "[PSysMonitor] Sending mail error!")
 
     def run(self):
         logger.log("INFO", "[PSysMonitor] Engine Start!")
         for key, picker in self.picker.iteritems():
             picker.start()
+        self.cur_system_status = False
         while(True):
             time.sleep(self.conf['interval'])
-            self.check_values()
-
+            alert_message = self.check_values()
+            if len(alert_message) > 0:
+                if not self.cur_system_status:
+                    self.cur_system_status = True
+                    self.report_exception(alert_message)
+            elif self.cur_system_status:
+                self.cur_system_status = False
+                self.report_ok()
 
 def main():
     monitor = PSysMonitor()

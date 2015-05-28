@@ -26,6 +26,9 @@ class BasicDataPicker(threading.Thread):
     def fetch_data(self):
         return self.data_report
 
+    def fetch_describe(self):
+        return "[Type:%s][Value:%s][Message:%s]" % (self.data_report['picker_name'], self.data_report['value'], self.data_report['message'])
+
 class CpuDataPicker(BasicDataPicker):
     def __init__(self):
         BasicDataPicker.__init__(self)
@@ -88,6 +91,9 @@ class ProcessPicker(BasicDataPicker):
         if len(not_found_list):
             self.data_report['value'] = 1
             self.data_report['message'] = 'not found:' + ','.join(not_found_list)
+        else:
+            self.data_report['value'] = 0
+            self.data_report['message'] = 'all process exist'
 
 def main_test():
     picker_list = []

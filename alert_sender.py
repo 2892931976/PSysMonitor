@@ -1,7 +1,9 @@
 import smtplib
+import logger
 from email.mime.text import MIMEText
 
 def send_mail(receiver, title, message):
+    logger.log("INFO", "[Mail Sender][To:%s][Title:%s][Message:%s]"%(receiver, title, message))
     me = "psysmonitor<psysmonitor@sina.com>"
     msg = MIMEText(message, _subtype="plain")
     msg["Subject"] = title
