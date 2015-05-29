@@ -1,6 +1,7 @@
+import setting
 import datetime
 def log(level, message):
-    log_filename = '/home/work/PSysMonitor/trace.log'
+    log_filename = setting.log_file()
     current_time = datetime.datetime.now().strftime("%d. %B %Y %I:%M%p")
     log_info = "[%s][%s][%s]" % (current_time, level, message)
     log_file = open(log_filename, 'a')

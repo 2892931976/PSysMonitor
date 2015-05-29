@@ -1,4 +1,5 @@
 import data_picker
+import setting
 import alert_sender
 import threading
 import logger
@@ -9,21 +10,16 @@ import os
 class PSysMonitor(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
-        self.server_name = "My Server"
-        self.admin_email = "mybuffer@163.com"
+        config = setting.monitor_config()
+        self.server_name = config['server_name']
+        self.admin_email = config['admin_email']
         self.last_heart_beat_date = ""
         self.picker = {}
         self.picker['cpu'] = data_picker.CpuDataPicker()
         self.picker['memory'] = data_picker.MemoryDataPicker()
         self.picker['network_send'] = data_picker.NetworkDataPicker(1)
         self.picker['network_receive'] = data_picker.NetworkDataPicker(2)
-        _monitor_process_list = (
-                'ss-server',
-                'tor',
-                'nginx',
-                'php5-fpm',
-                'fteproxy.bin',
-                ) # List of process to check exist
+        _monitor_process_list =  config['process_list']# List of process to check exist
         self.picker['process'] = data_picker.ProcessPicker(_monitor_process_list)
         self.conf = {}
         self.conf['interval'] = 10
