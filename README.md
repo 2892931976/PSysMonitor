@@ -3,7 +3,7 @@ PSysMonitor
 
 ##Introduce
 
-This is a simple monitor for linux server, with the ability to check the usage of CPU, memory, network I/O and process existance.
+This is a simple monitor for linux server, with the ability to check the usage of CPU, memory, network I/O and process existance. It will send alert to admin's email address when something went wrong.
 
 ##Base Tools
 
